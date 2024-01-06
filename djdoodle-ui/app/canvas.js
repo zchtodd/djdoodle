@@ -1,11 +1,9 @@
 "use client";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
-const CanvasComponent = (props) => {
-  const mousePosition = useRef({ x: 0, y: 0 });
-  const mouseDown = useRef(false);
+const CanvasComponent = ({ drawData, onMouseEvent }) => {
+  const [isMouseDown, setIsMouseDown] = useState(false);
   const canvasRef = useRef(null);
-  const ws = useRef(null);
 
   const drawBackground = (ctx, width, height) => {
     ctx.fillStyle = "black";
@@ -19,21 +17,22 @@ const CanvasComponent = (props) => {
     ctx.fill();
   };
 
-  const handleMouseMove = (event) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    mousePosition.current = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    };
-  };
+  const handleMouseEvent = (event) => {
+    if (isMouseDown) {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const position = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      };
+      onMouseEvent(event.type, position);
+    }
 
-  const handleMouseDown = () => {
-    mouseDown.current = true;
-  };
-
-  const handleMouseUp = () => {
-    mouseDown.current = false;
+    if (event.type === "mousedown") {
+      setIsMouseDown(true);
+    } else if (event.type === "mouseup") {
+      setIsMouseDown(false);
+    }
   };
 
   useEffect(() => {
@@ -44,48 +43,25 @@ const CanvasComponent = (props) => {
 
     drawBackground(context, canvas.width, canvas.height);
 
-    ws.current = new WebSocket(
-      `ws://${window.location.hostname}:8000/api/ws/draw/`,
-    );
-
-    ws.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.down) {
-        drawCircle(context, data.position.x, data.position.y);
-      }
-    };
-
-    const interval = setInterval(() => {
-      if (ws.current.readyState === WebSocket.OPEN) {
-        ws.current.send(
-          JSON.stringify({
-            down: mouseDown.current,
-            position: mousePosition.current,
-          }),
-        );
-      }
-    }, 10);
-
-    return () => {
-      clearInterval(interval);
-      if (ws.current) ws.current.close();
-    };
-  }, []);
+    drawData.forEach(({ x, y }) => {
+      drawCircle(context, x, y);
+    });
+  }, [drawData]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    canvas.addEventListener("mousemove", handleMouseMove);
-    canvas.addEventListener("mousedown", handleMouseDown);
-    canvas.addEventListener("mouseup", handleMouseUp);
+    canvas.addEventListener("mousemove", handleMouseEvent);
+    canvas.addEventListener("mousedown", handleMouseEvent);
+    canvas.addEventListener("mouseup", handleMouseEvent);
 
     return () => {
-      canvas.removeEventListener("mousemove", handleMouseMove);
-      canvas.removeEventListener("mousedown", handleMouseDown);
-      canvas.removeEventListener("mouseup", handleMouseUp);
+      canvas.removeEventListener("mousemove", handleMouseEvent);
+      canvas.removeEventListener("mousedown", handleMouseEvent);
+      canvas.removeEventListener("mouseup", handleMouseEvent);
     };
-  }, []);
+  }, [isMouseDown]);
 
-  return <canvas ref={canvasRef} {...props} />;
+  return <canvas ref={canvasRef} />;
 };
 
 export default CanvasComponent;
