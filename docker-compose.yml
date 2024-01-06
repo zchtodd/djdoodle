@@ -1,12 +1,27 @@
 version: "3.7"
 
 services:
-  app:
+  daphne:
     build:
       context: .
     command: daphne djdoodle.asgi:application -u /usr/src/app/daphne.sock
+    environment:
+      - REDIS_HOST=redis
     volumes:
       - $PWD:/usr/src/app
+    depends_on:
+      - redis
+
+  nextjs:
+    build:
+      context: ./djdoodle-ui
+    volumes:
+      - $PWD/djdoodle-ui:/usr/src/app
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
 
   nginx:
     image: nginx:latest
