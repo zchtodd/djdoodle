@@ -20,6 +20,7 @@ from core.ws_routing import ws_urlpatterns
 
 application = ProtocolTypeRouter(
     {
+        "http": application,
         "websocket": URLRouter(ws_urlpatterns),
     }
 )

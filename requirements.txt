@@ -1,5 +1,8 @@
 Django==4.1.7
 daphne==4.0.0
+django-ninja==0.22.2
 channels==4.0.0
 channels-redis==4.1.0
 websockets==11.0.3
+openai==1.6.1
+django-ninja==0.22.2

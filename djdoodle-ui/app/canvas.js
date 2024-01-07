@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 
-const CanvasComponent = ({ drawData, onMouseEvent }) => {
+const CanvasComponent = ({ drawData, color, onMouseEvent }) => {
   const [isMouseDown, setIsMouseDown] = useState(false);
   const canvasRef = useRef(null);
 
@@ -10,10 +10,10 @@ const CanvasComponent = ({ drawData, onMouseEvent }) => {
     ctx.fillRect(0, 0, width, height);
   };
 
-  const drawCircle = (ctx, x, y) => {
-    ctx.fillStyle = "white";
+  const drawCircle = (ctx, x, y, color) => {
+    ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.arc(x, y, 12, 0, 2 * Math.PI);
     ctx.fill();
   };
 
@@ -25,7 +25,7 @@ const CanvasComponent = ({ drawData, onMouseEvent }) => {
         x: event.clientX - rect.left,
         y: event.clientY - rect.top,
       };
-      onMouseEvent(event.type, position);
+      onMouseEvent(event.type, { color: color, ...position });
     }
 
     if (event.type === "mousedown") {
@@ -43,8 +43,8 @@ const CanvasComponent = ({ drawData, onMouseEvent }) => {
 
     drawBackground(context, canvas.width, canvas.height);
 
-    drawData.forEach(({ x, y }) => {
-      drawCircle(context, x, y);
+    drawData.forEach(({ x, y, color }) => {
+      drawCircle(context, x, y, color);
     });
   }, [drawData]);
 

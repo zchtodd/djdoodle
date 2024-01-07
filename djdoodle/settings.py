@@ -77,12 +77,13 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [(os.environ["REDIS_HOST"], 6379)],
+            "capacity": 1500,
         },
     },
 }
 
 WSGI_APPLICATION = "djdoodle.wsgi.application"
-
+OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
